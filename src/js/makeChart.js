@@ -50,6 +50,7 @@ export class MyChart {
         size: 14,
       },
       exponentformat: 'none',
+      type: '-',
     },
     yaxis: {
       title: {
@@ -62,6 +63,7 @@ export class MyChart {
         size: 14,
       },
       exponentformat: 'none',
+      type: '-',
     },
   };
 
@@ -150,6 +152,10 @@ export class MyChart {
         symbol: symbol,
       }
     });
+    this.xMin.value = this.LAYOUT.xaxis.range[0];
+    this.xMax.value = this.LAYOUT.xaxis.range[1];
+    this.yMin.value = this.LAYOUT.yaxis.range[0];
+    this.yMax.value = this.LAYOUT.yaxis.range[1];
   };
 
   getChartData() {
@@ -175,6 +181,16 @@ export class MyChart {
 
   updateChart() {
     const chartData = this.getChartData();
+    if (this.xAxis.value === '時刻') {
+      this.LAYOUT.xaxis.type = 'date';
+    } else {
+      this.LAYOUT.xaxis.type = '-';
+    }
+    if (this.yAxis.value === '時刻') {
+      this.LAYOUT.yaxis.type = 'date';
+    } else {
+      this.LAYOUT.yaxis.type = '-';
+    }
     Plotly.react(
       this.MYCHART, 
       chartData,

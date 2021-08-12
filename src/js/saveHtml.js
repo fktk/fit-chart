@@ -46,7 +46,6 @@ const extractDataFromHtmlText = text => {
 export function resetDataHandler() {
   document.getElementById('chart-data').textContent = JSON.stringify({});
   changeOrder([]);
-  changeHeaders(['No.']);
   removeAllList();
 
   this.chart.xMin.value='';
@@ -54,10 +53,6 @@ export function resetDataHandler() {
   this.chart.yMin.value='';
   this.chart.yMax.value='';
   
-  setHeadersToAxis();
-  this.chart.xAxis.value='No.';
-  this.chart.yAxis.value='No.';
-
   document.getElementById('text-area').value = '';
   document.getElementById('text-area').innerText = '';
   

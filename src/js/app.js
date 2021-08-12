@@ -41,6 +41,10 @@ window.onload = () => {
     document.getElementById('x-axis').value,
     document.getElementById('y-axis').value
   );
+  setHeadersToAxis(
+    '経過時間(min)',
+    '速度(km/h)'
+  );
   initList();
   const chart = new MyChart();
 

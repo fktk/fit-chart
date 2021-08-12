@@ -4,6 +4,7 @@ import { getHeaders, changeHeaders, setHeadersToAxis } from './handleHeaders';
 import { addList } from './sortList';
 import { showToast } from './myComponents';
 import { choiceColorIndex } from './palette';
+import FitParser from 'fit-file-parser';
 
 export function dropHandler(e) {
   e.preventDefault();
@@ -28,25 +29,71 @@ export function fileChangeHandler(e) {
 }
 
 const handleFile = (file, fileNumber, chart) => {
-  if (!/(csv|CSV)$/.test(file.name)) {
-    showToast(`${file.name}はCSVファイルではありません`)
+  if (!/(fit|FIT)$/.test(file.name)) {
+    showToast(`${file.name}はFITファイルではありません`)
     return;
   }
+
   const reader = new FileReader();
-  reader.readAsText(file);
+  reader.readAsArrayBuffer(file);
   reader.onload = () => {
-    const xAxis = document.getElementById('x-axis').value
-    const yAxis = document.getElementById('y-axis').value
-    const text = reader.result;
-    const {data, headerSet} = csvTextToObject(text);
-    data.colorIndex = choiceColorIndex(fileNumber);
-    changeHeaders(headerSet);
-    const fileName = incrementWordIfOverlapping(file.name.split('.')[0], getOrder());
-    addData({[fileName]: data});
-    addOrder(fileName);
-    addList(fileName);
-    setHeadersToAxis(xAxis, yAxis);
-    chart.addTrace(fileName);
+    const fitParser = new FitParser({
+      force: true,
+      speedUnit: 'km/h',
+      lengthUnit: 'm',
+      elapsedRecordField: true,
+    })
+    const buffer = reader.result;
+    fitParser.parse(buffer, (error, fitData) => {
+      if (error) {
+        console.log(error);
+      } else {
+        let data = {
+          '経過時間(min)': [],
+          '距離(km)': [],
+          '時刻': [],
+          '速度(km/h)': [],
+          '高度(m)': [],
+          'ケイデンス(rpm)': [],
+          '心拍数(bpm)': [],
+          'パワー(W)': [],
+          '温度(℃)': [],
+        };
+        fitData.records.forEach(record => {
+          data['経過時間(min)'].push(record['elapsed_time']/60);
+          data['距離(km)'].push(record['distance']/1000);
+          data['時刻'].push(
+            record['timestamp'].getFullYear().toString() + '-' +
+            record['timestamp'].getMonth().toString().padStart(2, '0') + '-' +
+            record['timestamp'].getDay().toString().padStart(2, '0') + ' ' +
+            record['timestamp'].getHours().toString().padStart(2, '0') + ':' +
+            record['timestamp'].getMinutes().toString().padStart(2, '0') + ':' +
+            record['timestamp'].getSeconds().toString().padStart(2, '0')
+          );
+          data['速度(km/h)'].push(record['speed']);
+          data['高度(m)'].push(record['altitude']);
+          data['ケイデンス(rpm)'].push(record['cadence']);
+          data['心拍数(bpm)'].push(record['heart_rate']);
+          data['パワー(W)'].push(record['power']);
+          data['温度(℃)'].push(record['temperature']);
+        })
+        const timestamp = fitData.sessions[0].start_time;
+        const Name = timestamp.getFullYear() + '年' +
+          timestamp.getMonth() + '月' +
+          timestamp.getDay() + '日' +
+          timestamp.getHours() + '時' +
+          timestamp.getMinutes() + '分';
+        const xAxis = document.getElementById('x-axis').value
+        const yAxis = document.getElementById('y-axis').value
+        data.colorIndex = choiceColorIndex(fileNumber);
+        const fileName = incrementWordIfOverlapping(Name, getOrder());
+        addData({[fileName]: data});
+        addOrder(fileName);
+        addList(fileName);
+        setHeadersToAxis(xAxis, yAxis);
+        chart.addTrace(fileName);
+      }
+    })
   };
 };
 
@@ -58,41 +105,5 @@ export const incrementWordIfOverlapping = (word, wordList) => {
     i++
   }
   return newWord;
-};
-
-const csvTextToObject = text => {
-  let data = {};
-  const mat = [];
-  const lines = text.trim().split('\n');
-  const rowNumber = lines.length;
-  const headers = lines[0].trim().split(',');
-  const columnNumber = headers.length;
-  const headerSet = getHeaders();
-
-  headers.forEach((header) => {
-    mat.push([]);
-    if (!headerSet.includes(header)) {
-      headerSet.push(header)
-    }
-  })
-
-  for (let row = 1; row < rowNumber; row++) {
-    const line = lines[row].trim().split(',')
-    for (let col = 0; col < columnNumber; col++) {
-      mat[col].push(Number(line[col]));
-    }
-  }
-
-  for (let col = 0; col < columnNumber; col++) {
-    if (mat[col].includes(NaN)) {
-      showToast(`${headers[col]}列は数値列ではないため読み込めません`)
-      continue;
-    }
-    data = Object.assign(data, {[headers[col]]: mat[col]});
-  }
-  data = Object.assign(
-    data, {'No.': [...Array(rowNumber-1)].map((_, i) => i)}
-  );
-  return {data, headerSet};
 };
 
