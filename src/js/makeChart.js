@@ -5,18 +5,15 @@ import { getCheckList } from './sortList'
 import { customPalette as palette} from './palette'
 
 export class MyChart {
-  MYCHART = document.getElementById('chart');
   mode = document.getElementById('mode');
   xAxis = document.getElementById('x-axis');
-  yAxis = document.getElementById('y-axis');
   xMin = document.getElementById('x-axis-min');
   xMax = document.getElementById('x-axis-max');
-  yMin = document.getElementById('y-axis-min');
-  yMax = document.getElementById('y-axis-max');
   legend = document.getElementById('legend');
   legendDirection = document.getElementById('legend-direction');
   LAYOUT = {
     autosize: true,
+    height: 250,
     //title: 'Chart',
     modebar: {
       orientation: 'h',
@@ -89,7 +86,7 @@ export class MyChart {
     ],
     toImageButtonOptions: {
       format: 'png',
-      filename: 'chart',
+      filename: 'fit-chart',
       height: 300,
       width: 400,
       scale: 2,
@@ -97,7 +94,16 @@ export class MyChart {
     doubleClickDelay: 800,
   };
 
-  constructor() {
+  constructor({
+    chartId,
+    yAxis,
+    yAxisMin,
+    yAxisMax,
+  }) {
+    this.MYCHART = document.getElementById(chartId);
+    this.yAxis = document.getElementById(yAxis);
+    this.yMin = document.getElementById(yAxisMin);
+    this.yMax = document.getElementById(yAxisMax);
     const chartData = this.getChartData();
     Plotly.newPlot(
       this.MYCHART, 

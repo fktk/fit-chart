@@ -1,25 +1,26 @@
 import { addData } from './handleData';
 import { addOrder, getOrder, changeOrder } from './handleOrder';
-import { getHeaders, concatHeaders, changeHeaders, setHeadersToAxis } from './handleHeaders';
+import { getHeaders, concatHeaders, setHeadersToAxis } from './handleHeaders';
 import { addList, removeAllList } from './sortList';
 import { incrementWordIfOverlapping } from './handleFiles';
 
 export function readHtmlHandler(e) {
   const file = e.target.files[0];
-  readHtmlAndUpdataData(file, this.chart);
-  document.getElementById('read').value = '';
-}
-
-const readHtmlAndUpdataData = (file, chart) => {
   if (!/(html)$/.test(file.name)) {
     showToast(`${file.name}はhtmlファイルではありません`)
     return;
   }
+  readHtmlAndUpdataData(file, this.charts);
+  document.getElementById('read').value = '';
+}
+
+const readHtmlAndUpdataData = (file, charts) => {
   const reader = new FileReader();
   reader.readAsText(file);
   reader.onload = () => {
     const xAxisValue = document.getElementById('x-axis').value;
     const yAxisValue = document.getElementById('y-axis').value;
+    const yAxis2Value = document.getElementById('y-axis2').value;
     const text = reader.result;
     const {data, order, headerSet} = extractDataFromHtmlText(text);
     concatHeaders(getHeaders(), headerSet);
@@ -29,8 +30,10 @@ const readHtmlAndUpdataData = (file, chart) => {
       addData({[newFileName]: data[fileName]});
       addOrder(newFileName);
       addList(newFileName);
-      setHeadersToAxis(xAxisValue, yAxisValue);
-      chart.addTrace(newFileName);
+      setHeadersToAxis(xAxisValue, yAxisValue, yAxis2Value);
+      charts.forEach(chart => {
+        chart.addTrace(newFileName);
+      })
     });
   };
 };
@@ -47,16 +50,15 @@ export function resetDataHandler() {
   document.getElementById('chart-data').textContent = JSON.stringify({});
   changeOrder([]);
   removeAllList();
-
-  this.chart.xMin.value='';
-  this.chart.xMax.value='';
-  this.chart.yMin.value='';
-  this.chart.yMax.value='';
-  
   document.getElementById('text-area').value = '';
   document.getElementById('text-area').innerText = '';
-  
-  this.chart.updateChart();
+  this.charts.forEach(chart => {
+    chart.xMin.value='';
+    chart.xMax.value='';
+    chart.yMin.value='';
+    chart.yMax.value='';
+    chart.updateChart();
+  })
 
 };
 

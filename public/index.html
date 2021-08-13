@@ -32,7 +32,10 @@
 
     <div class="whole-container">
 
-      <div id="chart" class="chart-area2"></div>
+      <div class="chart-area">
+        <div id="chart"></div>
+        <div id="chart2"></div>
+      </div>
 
       <div class="config-area">
 
@@ -111,6 +114,18 @@
               <div class="col">
                 <label class="form-label mb-0" for="y-axis-max">max</label>
                 <input id="y-axis-max" class="form-control form-control-sm" type="number">
+              </div>
+            </div>
+            <label for="y-axis2" class="form-label mt-2 mb-0">y軸</label>
+            <select id="y-axis2" name="" class="form-select form-select-sm mt-0"></select>
+            <div class="row gx-1">
+              <div class="col">
+                <label class="form-label mb-0" for="y-axis2-min">min</label>
+                <input id="y-axis2-min" class="form-control form-control-sm" type="number">
+              </div>
+              <div class="col">
+                <label class="form-label mb-0" for="y-axis2-max">max</label>
+                <input id="y-axis2-max" class="form-control form-control-sm" type="number">
               </div>
             </div>
 

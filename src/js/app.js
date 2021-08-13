@@ -1,5 +1,3 @@
-//sortListのリファクタリング
-//save時の状態の保存
 import 'bootstrap/js/dist/toast';
 import 'bootstrap/js/dist/tab';
 import 'bootstrap/js/dist/button';
@@ -29,39 +27,62 @@ window.onload = () => {
   spinner.classList.add('loaded');
 
   const chartDiv = document.getElementById('chart');
+  const chartDiv2 = document.getElementById('chart2');
   if (chartDiv.hasChildNodes()) {
     const listUl = document.getElementById('sort-list');
     const cloneChart = chartDiv.cloneNode(false);
+    const cloneChart2 = chartDiv2.cloneNode(false);
     const cloneList = listUl.cloneNode(false);
     chartDiv.parentNode.replaceChild(cloneChart, chartDiv);
+    chartDiv2.parentNode.replaceChild(cloneChart2, chartDiv2);
     listUl.parentNode.replaceChild(cloneList, listUl);
   }
 
   setHeadersToAxis(
     document.getElementById('x-axis').value,
-    document.getElementById('y-axis').value
+    document.getElementById('y-axis').value,
+    document.getElementById('y-axis2').value
   );
   setHeadersToAxis(
     '経過時間(min)',
-    '速度(km/h)'
+    '速度(km/h)',
+    'ケイデンス(rpm)'
   );
   initList();
-  const chart = new MyChart();
+  const chart = new MyChart({
+    chartId: 'chart',
+    yAxis: 'y-axis',
+    yAxisMin: 'y-axis-min',
+    yAxisMax: 'y-axis-max'
+  });
+  const chart2 = new MyChart({
+    chartId: 'chart2',
+    yAxis: 'y-axis2',
+    yAxisMin: 'y-axis2-min',
+    yAxisMax: 'y-axis2-max'
+  });
+  const charts = [chart, chart2];
 
   document.getElementById('mode').addEventListener('change', 
-    {chart: chart, handleEvent: changeModeHandler}, false
+    {charts: charts, handleEvent: changeModeHandler}, false
   );
   document.getElementById('x-axis-min').addEventListener('input', 
-    {chart: chart, handleEvent: inputXMinHandler}, false
+    {charts: charts, handleEvent: inputXMinHandler}, false
   );
   document.getElementById('x-axis-max').addEventListener('input', 
-    {chart: chart, handleEvent: inputXMaxHandler}, false
+    {charts: charts, handleEvent: inputXMaxHandler}, false
   );
   document.getElementById('y-axis-min').addEventListener('input', 
-    {chart: chart, handleEvent: inputYMinHandler}, false
+    {charts: charts, handleEvent: inputYMinHandler}, false
   );
   document.getElementById('y-axis-max').addEventListener('input', 
-    {chart: chart, handleEvent: inputYMaxHandler}, false
+    {charts: charts, handleEvent: inputYMaxHandler}, false
+  );
+  document.getElementById('y-axis2-min').addEventListener('input', 
+    {charts: charts, handleEvent: inputYMinHandler}, false
+  );
+  document.getElementById('y-axis2-max').addEventListener('input', 
+    {charts: charts, handleEvent: inputYMaxHandler}, false
   );
   document.getElementById('legend').addEventListener('change', 
     {chart: chart, handleEvent: changeLegendHandler}, false
@@ -70,15 +91,27 @@ window.onload = () => {
     {chart: chart, handleEvent: changeLegendDirectionHandler}, false
   );
   document.getElementById('x-axis').addEventListener('change', 
-    {chart: chart, handleEvent: function() {
-      this.chart.updateChart();
-      this.chart.setAxisName();
+    {charts: charts, handleEvent: function() {
+      this.charts.forEach(chart => {
+        chart.updateChart();
+        chart.setAxisName();
+      })
     }}, false
   );
   document.getElementById('y-axis').addEventListener('change', 
-    {chart: chart, handleEvent: function() {
-      this.chart.updateChart();
-      this.chart.setAxisName();
+    {charts: charts, handleEvent: function() {
+      this.charts.forEach(chart => {
+        chart.updateChart();
+        chart.setAxisName();
+      })
+    }}, false
+  );
+  document.getElementById('y-axis2').addEventListener('change', 
+    {charts: charts, handleEvent: function() {
+      this.charts.forEach(chart => {
+        chart.updateChart();
+        chart.setAxisName();
+      })
     }}, false
   );
   document.getElementById('text-area').addEventListener('input', (e) => {
@@ -86,15 +119,17 @@ window.onload = () => {
   }, false);
 
   document.getElementById('read').addEventListener('change',
-    {chart: chart, handleEvent: readHtmlHandler}, false
+    {charts: charts, handleEvent: readHtmlHandler}, false
   );
   document.getElementById('save').addEventListener('click', (e) => {
     const type = document.getElementById('mode');
     type.options[type.selectedIndex].setAttribute('selected', 'selected');
-    const xAxis= document.getElementById('x-axis');
+    const xAxis = document.getElementById('x-axis');
     xAxis.options[xAxis.selectedIndex].setAttribute('selected', 'selected');
-    const yAxis= document.getElementById('y-axis');
+    const yAxis = document.getElementById('y-axis');
     yAxis.options[yAxis.selectedIndex].setAttribute('selected', 'selected');
+    const yAxis2 = document.getElementById('y-axis2');
+    yAxis2.options[yAxis2.selectedIndex].setAttribute('selected', 'selected');
 
     let docOuterHtml = document.documentElement.outerHTML;
     docOuterHtml = docOuterHtml.replace(/loader-wrapper loaded/, 'loader-wrapper');
@@ -102,7 +137,7 @@ window.onload = () => {
   }, false); 
 
   document.getElementById('reset').addEventListener('click',
-    {chart: chart, handleEvent: resetDataHandler}, false
+    {charts: charts, handleEvent: resetDataHandler}, false
   );
 
   const dropZone = document.getElementById('drop-zone');
@@ -110,15 +145,15 @@ window.onload = () => {
     e.preventDefault();
   }, false);
   dropZone.addEventListener('drop',
-    {chart: chart, handleEvent: dropHandler}, false
+    {charts: charts, handleEvent: dropHandler}, false
   );
 
   document.getElementById('select-files').addEventListener('change',
-    {chart: chart, handleEvent: fileChangeHandler}, false
+    {charts: charts, handleEvent: fileChangeHandler}, false
   );
 
   document.getElementById('all-checked').addEventListener('change',
-    {chart: chart, handleEvent: toggleAllCheckedHandler}, false
+    {charts: charts, handleEvent: toggleAllCheckedHandler}, false
   );
 
 }

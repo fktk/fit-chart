@@ -22,10 +22,10 @@
 
 .whole-container {
     display: grid;
-    grid-template-rows: 60vh 1fr;
-    grid-template-columns: 5fr 2fr;
+    grid-template-rows: 75vh 1fr;
+    grid-template-columns: 6fr 2fr;
     grid-gap: 16px;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0px auto; 
     padding: 16px;
 }
@@ -33,6 +33,8 @@
 .chart-area {
     grid-column: 1 / 2;
     max-width: 600px;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
 }
 
 .config-area {

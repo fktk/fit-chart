@@ -11,15 +11,19 @@ export const concatHeaders = (headersA, headersB) => {
   document.getElementById('chart-headers').textContent = JSON.stringify([...new Set(newHeaders)]);
 };
 
-export const setHeadersToAxis = (xSelected='', ySelected='') => {
+export const setHeadersToAxis = (xSelected='', ySelected='', y2Selected='') => {
   const xAxis = document.getElementById('x-axis');
   const yAxis = document.getElementById('y-axis');
+  const yAxis2 = document.getElementById('y-axis2');
 
   while (xAxis.firstChild) {
     xAxis.removeChild(xAxis.firstChild);
   }
   while (yAxis.firstChild) {
     yAxis.removeChild(yAxis.firstChild);
+  }
+  while (yAxis2.firstChild) {
+    yAxis2.removeChild(yAxis2.firstChild);
   }
 
   const headers = getHeaders();
@@ -40,5 +44,14 @@ export const setHeadersToAxis = (xSelected='', ySelected='') => {
     option.value = header;
     option.textContent = header;
     yAxis.appendChild(option);
+  })
+  headers.forEach(header => {
+    const option = document.createElement('option');
+    if (header === y2Selected) {
+      option.selected = true;
+    }
+    option.value = header;
+    option.textContent = header;
+    yAxis2.appendChild(option);
   })
 };

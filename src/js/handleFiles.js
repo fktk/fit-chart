@@ -1,6 +1,6 @@
 import { addData } from './handleData';
 import { addOrder, getOrder } from './handleOrder';
-import { getHeaders, changeHeaders, setHeadersToAxis } from './handleHeaders';
+import { setHeadersToAxis } from './handleHeaders';
 import { addList } from './sortList';
 import { showToast } from './myComponents';
 import { choiceColorIndex } from './palette';
@@ -13,7 +13,7 @@ export function dropHandler(e) {
 
   const files = e.dataTransfer.files;
   for (let i = 0, f; f = files[i]; i++) {
-    handleFile(f, fileNumber, this.chart);
+    handleFile(f, fileNumber, this.charts);
     fileNumber++;
   }
 }
@@ -22,13 +22,13 @@ export function fileChangeHandler(e) {
   let fileNumber = getOrder().length;
   const files = e.target.files;
   for (let i = 0, f; f = files[i]; i++) {
-    handleFile(f, fileNumber, this.chart);
+    handleFile(f, fileNumber, this.charts);
     fileNumber++;
   }
   document.getElementById('select-files').value = '';
 }
 
-const handleFile = (file, fileNumber, chart) => {
+const handleFile = (file, fileNumber, charts) => {
   if (!/(fit|FIT)$/.test(file.name)) {
     showToast(`${file.name}はFITファイルではありません`)
     return;
@@ -85,13 +85,16 @@ const handleFile = (file, fileNumber, chart) => {
           timestamp.getMinutes() + '分';
         const xAxis = document.getElementById('x-axis').value
         const yAxis = document.getElementById('y-axis').value
+        const yAxis2 = document.getElementById('y-axis2').value
         data.colorIndex = choiceColorIndex(fileNumber);
         const fileName = incrementWordIfOverlapping(Name, getOrder());
         addData({[fileName]: data});
         addOrder(fileName);
         addList(fileName);
-        setHeadersToAxis(xAxis, yAxis);
-        chart.addTrace(fileName);
+        setHeadersToAxis(xAxis, yAxis, yAxis2);
+        charts.forEach(chart => {
+          chart.addTrace(fileName);
+        })
       }
     })
   };

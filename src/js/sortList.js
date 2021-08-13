@@ -39,11 +39,13 @@ export const initList = () => {
 
 const dragEnd = e => {
   const CHART = document.getElementById('chart');
+  const CHART2 = document.getElementById('chart2');
   const Order = getOrder();
   const item = Order.splice(e.oldIndex, 1)[0];
   Order.splice(e.newIndex, 0, item);
   changeOrder(Order);
   Plotly.moveTraces(CHART, e.oldIndex, e.newIndex);
+  Plotly.moveTraces(CHART2, e.oldIndex, e.newIndex);
 }
 
 const makeItemElement = (fileName) => {
@@ -89,7 +91,9 @@ const makeItemElement = (fileName) => {
     changeFileNameInOrder(oldName, newName);
     nameSpan.textContent = newName;
     const CHART = document.getElementById('chart');
+    const CHART2 = document.getElementById('chart2');
     Plotly.restyle(CHART, {name: newName}, getOrder().indexOf(newName));
+    Plotly.restyle(CHART2, {name: newName}, getOrder().indexOf(newName));
   }, false);
   nameInput.addEventListener('blur', () => {
     nameInput.classList.add(['d-none']);
@@ -139,11 +143,14 @@ const closeButtonClick = e => {
   const fileName = liEl.getElementsByTagName('span')[0].textContent;
   const index = getOrder().indexOf(fileName);
   const CHART = document.getElementById('chart');
+  const CHART2 = document.getElementById('chart2');
   liEl.remove();
   deleteData(fileName);
   deleteOrder(fileName);
   Plotly.deleteTraces(CHART, index);
+  Plotly.deleteTraces(CHART2, index);
   Plotly.update(CHART, {}, {});
+  Plotly.update(CHART2, {}, {});
 }
 
 const changeColor = e => {
@@ -151,8 +158,11 @@ const changeColor = e => {
   const index = getOrder().indexOf(fileName);
   changeColorIndex(fileName, e.detail.newColor);
   const CHART = document.getElementById('chart');
+  const CHART2 = document.getElementById('chart2');
   Plotly.restyle(CHART, {'marker.color': palette[e.detail.newColor]}, [index]);
   Plotly.update(CHART, {}, {});
+  Plotly.restyle(CHART2, {'marker.color': palette[e.detail.newColor]}, [index]);
+  Plotly.update(CHART2, {}, {});
 }
 
 const checkboxClick = e => {
@@ -160,8 +170,11 @@ const checkboxClick = e => {
   const order = getOrder();
   const index = order.indexOf(fileName);
   const CHART = document.getElementById('chart');
+  const CHART2 = document.getElementById('chart2');
   Plotly.restyle(CHART, {visible: e.target.checked}, [index])
   Plotly.update(CHART, {}, {});
+  Plotly.restyle(CHART2, {visible: e.target.checked}, [index])
+  Plotly.update(CHART2, {}, {});
 }
 
 export const addList = fileName => {
