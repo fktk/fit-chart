@@ -90,10 +90,10 @@ const handleFile = (file, fileNumber, charts) => {
         const fileName = incrementWordIfOverlapping(Name, getOrder());
         addData({[fileName]: data});
         addOrder(fileName);
-        addList(fileName);
         setHeadersToAxis(xAxis, yAxis, yAxis2);
         charts.forEach(chart => {
-          chart.addTrace(fileName);
+          addList(fileName, chart);
+          chart.updateChart();
         })
       }
     })

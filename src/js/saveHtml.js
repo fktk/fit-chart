@@ -29,10 +29,10 @@ const readHtmlAndUpdataData = (file, charts) => {
       const newFileName = incrementWordIfOverlapping(fileName, getOrder());
       addData({[newFileName]: data[fileName]});
       addOrder(newFileName);
-      addList(newFileName);
       setHeadersToAxis(xAxisValue, yAxisValue, yAxis2Value);
       charts.forEach(chart => {
-        chart.addTrace(newFileName);
+        addList(newFileName, chart);
+        chart.updateChart();
       })
     });
   };

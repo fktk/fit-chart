@@ -1,4 +1,4 @@
-import Plotly from 'plotly.js-gl2d-dist';
+import Plotly from 'plotly.js-dist-min';
 import { getData } from './handleData';
 import { getOrder } from './handleOrder';
 import { getCheckList } from './sortList'
@@ -9,11 +9,16 @@ export class MyChart {
   xAxis = document.getElementById('x-axis');
   xMin = document.getElementById('x-axis-min');
   xMax = document.getElementById('x-axis-max');
+  yAxis = document.getElementById('y-axis');
+  yMin = document.getElementById('y-axis-min');
+  yMax = document.getElementById('y-axis-max');
+  yAxis2 = document.getElementById('y-axis2');
+  y2Min = document.getElementById('y-axis2-min');
+  y2Max = document.getElementById('y-axis2-max');
   legend = document.getElementById('legend');
   legendDirection = document.getElementById('legend-direction');
   LAYOUT = {
     autosize: true,
-    height: 250,
     //title: 'Chart',
     modebar: {
       orientation: 'h',
@@ -37,6 +42,7 @@ export class MyChart {
       orientation: 'v',
     },
     xaxis: {
+      anchor: 'y2',
       title: {
         text: 'x軸',
         font: {
@@ -50,6 +56,22 @@ export class MyChart {
       type: '-',
     },
     yaxis: {
+      domain: [0.5, 1],
+      title: {
+        text: 'y軸',
+        font: {
+          size: 16,
+        },
+      },
+      tickfont: {
+        size: 14,
+      },
+      exponentformat: 'none',
+      type: '-',
+    },
+    yaxis2: {
+      domain: [0, 0.5],
+      range: [null, null],
       title: {
         text: 'y軸',
         font: {
@@ -94,16 +116,8 @@ export class MyChart {
     doubleClickDelay: 800,
   };
 
-  constructor({
-    chartId,
-    yAxis,
-    yAxisMin,
-    yAxisMax,
-  }) {
+  constructor({ chartId }) {
     this.MYCHART = document.getElementById(chartId);
-    this.yAxis = document.getElementById(yAxis);
-    this.yMin = document.getElementById(yAxisMin);
-    this.yMax = document.getElementById(yAxisMax);
     const chartData = this.getChartData();
     Plotly.newPlot(
       this.MYCHART, 
@@ -118,6 +132,8 @@ export class MyChart {
       this.xMax.value = this.LAYOUT.xaxis.range[1];
       this.yMin.value = this.LAYOUT.yaxis.range[0];
       this.yMax.value = this.LAYOUT.yaxis.range[1];
+      this.y2Min.value = this.LAYOUT.yaxis2.range[0];
+      this.y2Max.value = this.LAYOUT.yaxis2.range[1];
     }, 200);
 
     this.MYCHART.on('plotly_autosize', () => {
@@ -126,6 +142,8 @@ export class MyChart {
       this.xMax.value = this.LAYOUT.xaxis.range[1];
       this.yMin.value = this.LAYOUT.yaxis.range[0];
       this.yMax.value = this.LAYOUT.yaxis.range[1];
+      this.y2Min.value = this.LAYOUT.yaxis2.range[0];
+      this.y2Max.value = this.LAYOUT.yaxis2.range[1];
       }, 200);
     });
 
@@ -138,40 +156,20 @@ export class MyChart {
     Plotly.relayout(this.MYCHART, {
       'xaxis.title.text': this.xAxis.value,
       'yaxis.title.text': this.yAxis.value,
+      'yaxis2.title.text': this.yAxis2.value,
     })
   }
 
-  addTrace(fileName) {
-    const data = getData();
-    const symbol = Object.keys(data).length + 1;
-
-    Plotly.addTraces(this.MYCHART, {
-      type: 'scattergl',
-      name: fileName,
-      visible: true,
-      x: data[fileName][this.xAxis.value],
-      y: data[fileName][this.yAxis.value],
-      mode: this.mode.value,
-      marker: {
-        size: 9,
-        color: palette[data[fileName].colorIndex],
-        symbol: symbol,
-      }
-    });
-    this.xMin.value = this.LAYOUT.xaxis.range[0];
-    this.xMax.value = this.LAYOUT.xaxis.range[1];
-    this.yMin.value = this.LAYOUT.yaxis.range[0];
-    this.yMax.value = this.LAYOUT.yaxis.range[1];
-  };
-
   getChartData() {
+    const chartData = [];
     const data = getData();
     const order = getOrder();
     const checkList = getCheckList();
-    return order.map((file, i) => {
-      return {
+    order.forEach((file, i) => {
+      chartData.push({
         type: 'scattergl',
         name: file,
+        legendgroup: file,
         visible: checkList[i],
         x: data[file][this.xAxis.value],
         y: data[file][this.yAxis.value],
@@ -181,8 +179,25 @@ export class MyChart {
           color: palette[data[file].colorIndex],
           symbol: i,
         }
-      };
+      });
+      chartData.push({
+        type: 'scattergl',
+        name: file,
+        legendgroup: file,
+        showlegend: false,
+        visible: checkList[i],
+        x: data[file][this.xAxis.value],
+        y: data[file][this.yAxis2.value],
+        yaxis: 'y2',
+        mode: this.mode.value,
+        marker: {
+          size: 9,
+          color: palette[data[file].colorIndex],
+          symbol: i,
+        }
+      });
     });
+    return chartData;
   };
 
   updateChart() {
@@ -196,6 +211,11 @@ export class MyChart {
       this.LAYOUT.yaxis.type = 'date';
     } else {
       this.LAYOUT.yaxis.type = '-';
+    }
+    if (this.yAxis2.value === '時刻') {
+      this.LAYOUT.yaxis2.type = 'date';
+    } else {
+      this.LAYOUT.yaxis2.type = '-';
     }
     Plotly.react(
       this.MYCHART, 

@@ -1,6 +1,6 @@
 import Sortable from 'sortablejs/modular/sortable.core.esm.js';
 import EightBitColorPicker from 'eight-bit-color-picker/lib/eight-bit-color-picker.js';
-import Plotly from 'plotly.js-gl2d-dist'
+import Plotly from 'plotly.js-dist-min'
 
 import { 
   getData,
@@ -39,16 +39,14 @@ export const initList = () => {
 
 const dragEnd = e => {
   const CHART = document.getElementById('chart');
-  const CHART2 = document.getElementById('chart2');
-  const Order = getOrder();
-  const item = Order.splice(e.oldIndex, 1)[0];
-  Order.splice(e.newIndex, 0, item);
-  changeOrder(Order);
-  Plotly.moveTraces(CHART, e.oldIndex, e.newIndex);
-  Plotly.moveTraces(CHART2, e.oldIndex, e.newIndex);
+  const order = getOrder();
+  const item = order.splice(e.oldIndex, 1)[0];
+  order.splice(e.newIndex, 0, item);
+  changeOrder(order);
+  Plotly.moveTraces(CHART, [e.oldIndex*2, e.oldIndex*2+1], [e.newIndex*2, e.newIndex*2+1]);
 }
 
-const makeItemElement = (fileName) => {
+const makeItemElement = (fileName, chart) => {
   const li = document.createElement('li');
   li.className = 'sort-item list-group-item p-1 d-flex align-items-center';
   li.style = 'cursor: move;'
@@ -80,21 +78,7 @@ const makeItemElement = (fileName) => {
   nameInput.style = 'height: 1rem; padding: 2px; width: 100%;';
   nameInput.value = fileName;
 
-  nameInput.addEventListener('change', () => {
-    const oldName = nameSpan.textContent;
-    const newName = nameInput.value;
-    nameInput.classList.add(['d-none']);
-    nameSpan.classList.remove(['d-none']);
-    if (Object.keys(getData()).includes(newName)) { return; }
-    if (newName === '') { return; }
-    changeFileNameInData(oldName, newName);
-    changeFileNameInOrder(oldName, newName);
-    nameSpan.textContent = newName;
-    const CHART = document.getElementById('chart');
-    const CHART2 = document.getElementById('chart2');
-    Plotly.restyle(CHART, {name: newName}, getOrder().indexOf(newName));
-    Plotly.restyle(CHART2, {name: newName}, getOrder().indexOf(newName));
-  }, false);
+  nameInput.addEventListener('change', {chart: chart, nameSpan: nameSpan, handleEvent: nameInputChange}, false);
   nameInput.addEventListener('blur', () => {
     nameInput.classList.add(['d-none']);
     nameSpan.classList.remove(['d-none']);
@@ -104,9 +88,10 @@ const makeItemElement = (fileName) => {
   editClose.className = 'ms-auto d-flex align-items-center'
   const editButton = document.createElement('button');
   editButton.className = 'btn btn-link p-0 me-1'
-  editButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5L13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175l-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
-</svg>`;
+  editButton.innerHTML = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5L13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175l-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+  </svg>`;
   editButton.addEventListener('click', () => {
     const fileName = nameSpan.textContent;
     nameInput.classList.remove(['d-none']);
@@ -123,7 +108,7 @@ const makeItemElement = (fileName) => {
       height: 0.2rem;
       margin: 0 0.1rem;
     `;
-  closeButton.addEventListener('click', closeButtonClick, false);
+  closeButton.addEventListener('click', {chart: chart, handleEvent: closeButtonClick} , false);
 
   checkColor.appendChild(checkbox);
   checkColor.appendChild(colorPicker);
@@ -138,19 +123,27 @@ const makeItemElement = (fileName) => {
   return li;
 }
 
-const closeButtonClick = e => {
+function nameInputChange(e) {
+  console.log(e)
+  const oldName = this.nameSpan.textContent;
+  const newName = e.target.value;
+  e.target.classList.add(['d-none']);
+  this.nameSpan.classList.remove(['d-none']);
+  if (Object.keys(getData()).includes(newName)) { return; }
+  if (newName === '') { return; }
+  changeFileNameInData(oldName, newName);
+  changeFileNameInOrder(oldName, newName);
+  this.nameSpan.textContent = newName;
+  this.chart.updateChart();
+}
+
+function closeButtonClick(e) {
   const liEl = e.target.parentElement.parentElement;
   const fileName = liEl.getElementsByTagName('span')[0].textContent;
-  const index = getOrder().indexOf(fileName);
-  const CHART = document.getElementById('chart');
-  const CHART2 = document.getElementById('chart2');
   liEl.remove();
   deleteData(fileName);
   deleteOrder(fileName);
-  Plotly.deleteTraces(CHART, index);
-  Plotly.deleteTraces(CHART2, index);
-  Plotly.update(CHART, {}, {});
-  Plotly.update(CHART2, {}, {});
+  this.chart.updateChart();
 }
 
 const changeColor = e => {
@@ -158,11 +151,8 @@ const changeColor = e => {
   const index = getOrder().indexOf(fileName);
   changeColorIndex(fileName, e.detail.newColor);
   const CHART = document.getElementById('chart');
-  const CHART2 = document.getElementById('chart2');
-  Plotly.restyle(CHART, {'marker.color': palette[e.detail.newColor]}, [index]);
+  Plotly.restyle(CHART, {'marker.color': palette[e.detail.newColor]}, [index*2, index*2+1]);
   Plotly.update(CHART, {}, {});
-  Plotly.restyle(CHART2, {'marker.color': palette[e.detail.newColor]}, [index]);
-  Plotly.update(CHART2, {}, {});
 }
 
 const checkboxClick = e => {
@@ -170,16 +160,13 @@ const checkboxClick = e => {
   const order = getOrder();
   const index = order.indexOf(fileName);
   const CHART = document.getElementById('chart');
-  const CHART2 = document.getElementById('chart2');
-  Plotly.restyle(CHART, {visible: e.target.checked}, [index])
+  Plotly.restyle(CHART, {visible: e.target.checked}, [index*2, index*2+1])
   Plotly.update(CHART, {}, {});
-  Plotly.restyle(CHART2, {visible: e.target.checked}, [index])
-  Plotly.update(CHART2, {}, {});
 }
 
-export const addList = fileName => {
+export const addList = (fileName, chart) => {
   const sortListContainer = document.getElementById('sort-list');
-  sortListContainer.appendChild(makeItemElement(fileName));
+  sortListContainer.appendChild(makeItemElement(fileName, chart));
 }
 export const removeAllList = () => {
   const sortListContainer = document.getElementById('sort-list');

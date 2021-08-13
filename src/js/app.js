@@ -27,41 +27,22 @@ window.onload = () => {
   spinner.classList.add('loaded');
 
   const chartDiv = document.getElementById('chart');
-  const chartDiv2 = document.getElementById('chart2');
   if (chartDiv.hasChildNodes()) {
     const listUl = document.getElementById('sort-list');
     const cloneChart = chartDiv.cloneNode(false);
-    const cloneChart2 = chartDiv2.cloneNode(false);
     const cloneList = listUl.cloneNode(false);
     chartDiv.parentNode.replaceChild(cloneChart, chartDiv);
-    chartDiv2.parentNode.replaceChild(cloneChart2, chartDiv2);
     listUl.parentNode.replaceChild(cloneList, listUl);
   }
 
-  setHeadersToAxis(
-    document.getElementById('x-axis').value,
-    document.getElementById('y-axis').value,
-    document.getElementById('y-axis2').value
-  );
   setHeadersToAxis(
     '経過時間(min)',
     '速度(km/h)',
     'ケイデンス(rpm)'
   );
   initList();
-  const chart = new MyChart({
-    chartId: 'chart',
-    yAxis: 'y-axis',
-    yAxisMin: 'y-axis-min',
-    yAxisMax: 'y-axis-max'
-  });
-  const chart2 = new MyChart({
-    chartId: 'chart2',
-    yAxis: 'y-axis2',
-    yAxisMin: 'y-axis2-min',
-    yAxisMax: 'y-axis2-max'
-  });
-  const charts = [chart, chart2];
+  const chart = new MyChart({ chartId: 'chart' });
+  const charts = [chart];
 
   document.getElementById('mode').addEventListener('change', 
     {charts: charts, handleEvent: changeModeHandler}, false

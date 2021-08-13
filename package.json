@@ -28,7 +28,7 @@
     "eight-bit-color-picker": "github:fktk/eight-bit-color-picker",
     "fit-file-parser": "^1.9.0",
     "jpn.css": "^1.0.1",
-    "plotly.js-gl2d-dist": "^2.3.0",
+    "plotly.js-dist-min": "^2.3.1",
     "sortablejs": "^1.14.0"
   }
 }

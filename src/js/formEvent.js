@@ -1,4 +1,4 @@
-import Plotly from 'plotly.js-gl2d-dist';
+import Plotly from 'plotly.js-dist-min';
 
 export function changeModeHandler() {
   this.charts.forEach(chart => {
@@ -38,7 +38,7 @@ export function inputYMaxHandler() {
 }
 
 export function changeLegendHandler() {
-  Plotly.relayout(this.chart.MYCHART, {'showlegend': chart.legend.checked});
+  Plotly.relayout(this.chart.MYCHART, {'showlegend': this.chart.legend.checked});
 }
 
 export function changeLegendDirectionHandler() {
